@@ -1,0 +1,20 @@
+{
+  "date": "2026-07-19",
+  "season": "Ordinary Time",
+  "liturgical_day": "Seventh Sunday after Pentecost",
+  "theme": "The Good Soil — patience, rootedness, and what grows unseen",
+  "template": "B",
+  "readings": {
+    "first_reading": "Isaiah 55:10-13 — As the rain waters the earth, so shall my word accomplish its purpose",
+    "gospel": "Matthew 13:1-9, 18-23 — The parable of the sower and the soils"
+  },
+  "songs": {
+    "gathering": "Morning by the Water",
+    "gospel_acclamation": "Alleluia round the Table",
+    "hymn_of_day": "Deep Calls to Deep",
+    "offering": "Every Table Widens",
+    "communion": "Bread for the Wandering",
+    "sending": "O Rising Sun of Justice"
+  },
+  "notes": "Demo service for the sample repository. All content fictional."
+}

@@ -73,7 +73,7 @@ def show_resources(song_id, song_title):
         print(f'  Resources for "{song_title}":')
         for r in resources:
             key_str = f' [{r[2]}]' if r[2] else ''
-            notes_str = f' — {r[4]}' if r[4] else ''
+            notes_str = f'; {r[4]}' if r[4] else ''
             exists = '✅' if os.path.exists(r[3]) else '❌ FILE MISSING'
             print(f'    ID {r[0]}: {r[1]}{key_str}{notes_str}')
             print(f'      {exists} {r[3]}')
@@ -92,7 +92,7 @@ def pick_song():
     print()
     for i, (sid, title, artist, hymnal) in enumerate(results, 1):
         hymnal_str = f' [{hymnal}]' if hymnal else ''
-        artist_str = f' — {artist}' if artist else ''
+        artist_str = f'; {artist}' if artist else ''
         print(f'  {i}. ID {sid:3d}: {title}{artist_str}{hymnal_str}')
 
     choice = input('\nEnter number (or Enter to cancel): ').strip()
@@ -122,7 +122,7 @@ def add_resource():
     # Pick resource type
     print('Resource type:')
     for key, (rtype, desc) in RESOURCE_TYPES.items():
-        print(f'  {key}. {rtype} — {desc}')
+        print(f'  {key}. {rtype}; {desc}')
     type_choice = input('Enter number: ').strip()
     if type_choice not in RESOURCE_TYPES:
         print('  Invalid choice.')
@@ -130,7 +130,7 @@ def add_resource():
     resource_type = RESOURCE_TYPES[type_choice][0]
 
     # Key signature
-    key_sig = input('Key signature (e.g. Bb, G, D — or Enter to skip): ').strip() or None
+    key_sig = input('Key signature (e.g. Bb, G, D; or Enter to skip): ').strip() or None
 
     # File path
     print()
@@ -152,7 +152,7 @@ def add_resource():
             return
 
     # Notes
-    notes = input('Notes (e.g. "SATB", "no chords", "2-part" — or Enter to skip): ').strip() or None
+    notes = input('Notes (e.g. "SATB", "no chords", "2-part"; or Enter to skip): ').strip() or None
 
     # Save to DB
     conn = get_db()
@@ -252,7 +252,7 @@ def delete_resource():
 
 def main():
     print('='*60)
-    print('  RESOURCE MANAGER — Trinity Worship Database')
+    print('  RESOURCE MANAGER; Trinity Worship Database')
     print('='*60)
 
     if MUSIC_LIBRARY:

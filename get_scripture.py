@@ -1,118 +1,60 @@
 #!/usr/bin/env python3
 """
-get_scripture.py — Fetch NRSV scripture text from Bible Gateway.
+get_scripture.py; scripture retrieval for the demo pipeline.
+
+DESIGN NOTE, and it matters: this public demonstration ships with scripture
+as local fixture text (scripture_fixtures.json) in the World English Bible,
+a public-domain translation. The production system retrieves its licensed
+translation through channels permitted by that publisher's terms, and that
+implementation stays private. Two rules hold in both worlds:
+
+  1. Scripture text is never generated, re-typed, or paraphrased by a
+     language model. It is fetched from an authoritative source and placed
+     programmatically. (The retired API version of this pipeline broke that
+     rule and produced a recurring text-corruption bug; see the README.)
+  2. Text rights are respected. A demo that scraped a licensed translation
+     would be a data-handling failure in a repository that exists to
+     demonstrate careful data handling.
 
 Usage:
-    python get_scripture.py                          # interactive mode
-    python get_scripture.py "Matthew 28:1-10"        # direct lookup
-    python get_scripture.py "Acts 10:34-43"          # any reference
+    python3 get_scripture.py "Isaiah 55:10-13"     # look up a fixture passage
+    (or imported by build_worship_plan.py via fetch_readings)
 
-No API key needed. Uses Bible Gateway NRSV directly.
+To add passages to the demo, append them to scripture_fixtures.json with a
+lowercase "book chapter:verses" key and public-domain text.
 """
 
-import sys
+import json
+import os
 import re
-import requests
-from bs4 import BeautifulSoup
+import sys
 
-BASE_URL = "https://www.biblegateway.com/passage/"
-VERSION = "NRSV"
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    )
-}
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FIXTURES = os.path.join(BASE_DIR, "scripture_fixtures.json")
 
 
-def fetch_passage(reference: str) -> tuple:
-    """
-    Fetch NRSV passage text from Bible Gateway.
-    Returns (display_ref, clean_text) tuple.
-    Raises ValueError on failure.
-    """
-    # Strip description after " — " or " - "
-    display_ref = reference.strip()
-    for sep in [' \u2014 ', ' \u2013 ', ' - ']:
-        if sep in display_ref:
-            display_ref = display_ref.split(sep)[0].strip()
-
-    params = {"search": display_ref, "version": VERSION}
-    resp = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=15)
-
-    if resp.status_code != 200:
-        raise ValueError(f"Bible Gateway returned {resp.status_code} for '{display_ref}'")
-
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    # Find all text containers — non-contiguous ranges (e.g. "Psalm 118:1-2, 14-24")
-    # produce multiple result-text-style-normal divs; collect all of them.
-    passage_wraps = soup.find_all("div", class_=re.compile(r"result-text-style-normal"))
-
-    if not passage_wraps:
-        # Fallback: try passage-content
-        fallback = soup.find("div", class_="passage-content")
-        if fallback:
-            passage_wraps = [fallback]
-
-    if not passage_wraps:
-        raise ValueError(
-            f"Could not find passage text for '{display_ref}'. "
-            "Check the reference format, e.g. 'Matthew 28:1-10'."
-        )
-
-    segments = []
-    for passage_wrap in passage_wraps:
-        # Remove footnotes, crossrefs, verse numbers, chapter numbers, and headings
-        for tag in list(passage_wrap.find_all(["sup", "h1", "h2", "h3", "h4"])):
-            classes = " ".join(tag.get("class", []))
-            # Remove noise elements with known classes
-            if any(x in classes for x in ["footnote", "crossref", "chapternum", "versenum"]):
-                tag.decompose()
-            # Remove section headings and footnote/crossref headers (no class = editorial heading)
-            elif not classes and tag.name in ("h3", "h4"):
-                tag.decompose()
-            # Remove chapter number headings (e.g. "Psalm 118" displayed as h3.chapter)
-            elif "chapter" in classes and tag.name in ("h3", "h4"):
-                tag.decompose()
-
-        for tag in list(passage_wrap.find_all("span")):
-            classes = " ".join(tag.get("class", []))
-            if any(x in classes for x in ["chapternum", "versenum"]):
-                tag.decompose()
-
-        for tag in list(passage_wrap.find_all("div", class_=re.compile(r"footnotes|crossrefs"))):
-            tag.decompose()
-
-        raw = passage_wrap.get_text(separator=" ")
-        # Normalize non-breaking / unicode spaces first — Bible Gateway uses &nbsp;
-        # ( ) for poetic-line indentation, which otherwise survives as funky
-        # multi-space gaps mid-line in poetry (e.g. Zechariah 9, the Psalms).
-        raw = raw.replace(" ", " ").replace(" ", " ").replace(" ", " ")
-        lines = [line.strip() for line in raw.splitlines() if line.strip()]
-        segment = re.sub(r"\s+", " ", " ".join(lines)).strip()
-        # Remove trailing "Read full chapter" link text
-        segment = re.sub(r"\s*Read full chapter\s*$", "", segment).strip()
-        if segment:
-            segments.append(segment)
-
-    text = " … ".join(segments)
-    # Fix spacing artifacts from link tags (e.g. "the Lord ," → "the Lord,")
-    text = re.sub(r" ([,;:.!?''])", r"\1", text)
-    # Fix possessives with space (e.g. "Lord 's" → "Lord's") — handles curly apostrophes
-    text = re.sub(r" (\u2019s|\u2018s|'s)\b", r"\1", text)
-
-    if not text:
-        raise ValueError(f"No text extracted for '{display_ref}'")
-
-    return display_ref, text
+def _normalize(ref: str) -> str:
+    """'Isaiah 55:10-13, As the rain waters...' -> 'isaiah 55:10-13'"""
+    ref = re.split(r"\s*(?:;|,\s(?=[A-Z]))", ref, maxsplit=1)[0]
+    return re.sub(r"\s+", " ", ref).strip().lower()
 
 
-def format_passage(ref: str, text: str) -> str:
-    """Format for display."""
-    bar = "\u2500" * 52
-    return f"\n{bar}\n  {ref}  (NRSV)\n{bar}\n{text}\n{bar}\n"
+def _load_fixtures() -> dict:
+    with open(FIXTURES) as f:
+        return json.load(f)
+
+
+def fetch_passage(ref: str):
+    """Return (display_reference, passage_text) from the local fixture file."""
+    fixtures = _load_fixtures()
+    key = _normalize(ref)
+    if key not in fixtures:
+        available = ", ".join(sorted(fixtures))
+        raise KeyError(
+            f"'{key}' is not in scripture_fixtures.json (demo has: {available}). "
+            f"Add the passage from a public-domain translation, or supply text manually.")
+    entry = fixtures[key]
+    return f"{entry['reference']} ({entry['translation']})", entry["text"]
 
 
 def fetch_readings(readings: dict) -> dict:
@@ -129,54 +71,17 @@ def fetch_readings(readings: dict) -> dict:
         try:
             display_ref, text = fetch_passage(ref)
             result[slot] = f"{display_ref}\n\n{text}"
-            print(f"  \u2705 {slot}: {display_ref}")
+            print(f"  ✅ {slot}: {display_ref}")
         except Exception as e:
             result[slot] = ref
-            print(f"  \u26a0\ufe0f  {slot}: could not fetch — {e}")
+            print(f"  ⚠️  {slot}: fixture not found; citation kept as-is ({e})")
     return result
 
 
-def interactive_mode():
-    print("\n\U0001f4d6  Scripture Fetcher (NRSV via Bible Gateway)")
-    print("    Type a reference or 'q' to quit.")
-    print("    Examples: 'Matthew 28:1-10'  |  'Acts 10:34-43'  |  'Psalm 118:1-2, 14-24'")
-    print()
-
-    while True:
-        try:
-            ref = input("Reference: ").strip()
-        except (KeyboardInterrupt, EOFError):
-            print("\nGoodbye!")
-            break
-
-        if not ref or ref.lower() in ("q", "quit", "exit"):
-            print("Goodbye!")
-            break
-
-        try:
-            display_ref, text = fetch_passage(ref)
-            print(format_passage(display_ref, text))
-        except ValueError as e:
-            print(f"\n\u274c  {e}\n")
-        except Exception as e:
-            print(f"\n\u274c  Network error: {e}\n")
-
-
-def main():
-    if len(sys.argv) > 1:
-        ref_string = " ".join(sys.argv[1:])
-        try:
-            display_ref, text = fetch_passage(ref_string)
-            print(format_passage(display_ref, text))
-        except ValueError as e:
-            print(f"\n\u274c  {e}\n")
-            sys.exit(1)
-        except Exception as e:
-            print(f"\n\u274c  Network error: {e}\n")
-            sys.exit(1)
-    else:
-        interactive_mode()
-
-
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        ref, text = fetch_passage(" ".join(sys.argv[1:]))
+        print(ref + "\n")
+        print(text)
+    else:
+        print(__doc__)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Build lectionary table in worship.db (demo: Year A 2025-2026)
-Year A 2025-2026 — verified against yeara_25_26_all.pdf
+Year A 2025-2026; verified against yeara_25_26_all.pdf
 """
 import sqlite3
 import os
@@ -27,13 +27,13 @@ CREATE TABLE IF NOT EXISTS lectionary (
 );
 """)
 
-# Year A 2025-2026 Sundays — extracted from yeara_25_26_all.pdf
+# Year A 2025-2026 Sundays; extracted from yeara_25_26_all.pdf
 # verified = 1 means confirmed against the ELCA PDF
 rows = [
     # LENT (remaining)
     ("2026-03-22", "Lent", "A", "Lent 5",
      "Ezekiel 37:1-14", "Psalm 130", "Romans 8:6-11", "John 11:1-45",
-     "Lazarus; dry bones. Spring Equinox — Trinity does a Celebration of Seasons service", 1),
+     "Lazarus; dry bones. Spring Equinox; Trinity does a Celebration of Seasons service", 1),
 
     ("2026-03-29", "Lent/Holy Week", "A", "Palm Sunday",
      "Isaiah 50:4-9a", "Psalm 31:9-16", "Philippians 2:5-11", "Matthew 26:14-27:66 or 27:11-54",

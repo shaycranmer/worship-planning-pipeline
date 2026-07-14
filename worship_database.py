@@ -131,7 +131,7 @@ class WorshipDatabase:
                 song_id INTEGER NOT NULL,
                 order_in_service INTEGER,  -- Track sequence: opening, offertory, closing, etc.
                 slot TEXT,   -- liturgical slot: gathering, hymn_of_day, offering, communion, sending…
-                notes TEXT,  -- per-use notes: 'cut verse 3', 'key felt high' — the lived memory
+                notes TEXT,  -- per-use notes: 'cut verse 3', 'key felt high'; the lived memory
                 FOREIGN KEY (service_id) REFERENCES service_history(id) ON DELETE CASCADE,
                 FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
             )

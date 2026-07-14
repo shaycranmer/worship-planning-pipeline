@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_worship_plan.py — deterministic worship plan builder (post-mini pipeline).
+build_worship_plan.py; deterministic worship plan builder (post-mini pipeline).
 
 The current pipeline. No mini-personas, no API calls, no LLM in the loop. The liturgist
 real one) writes liturgy into the shared handoff folder; this script reads it,
@@ -9,8 +9,8 @@ generates the .docx directly through the generator. Scripture never passes throu
 a model, so the encoding bug that plagued the retired mini-builder cannot happen here.
 
 Inputs:
-  - worship_input.json (this folder)           — structured service params (builder writes)
-  - <handoff>/<date>/liturgist_blocks.txt      — liturgy, labeled plain text (liturgist writes)
+  - worship_input.json (this folder)          ; structured service params (builder writes)
+  - <handoff>/<date>/liturgist_blocks.txt     ; liturgy, labeled plain text (liturgist writes)
 
 Outputs:
   - Worship Plans/worship_plan_<date>_<TITLE>.docx
@@ -145,7 +145,7 @@ def previous_service_split(cur, service_date_str):
 
 
 def song_use_notes(cur, song_id, service_date_str, weeks=16):
-    """Per-use notes from recent services — the lived memory ('cut verse 3', 'key too high')."""
+    """Per-use notes from recent services; the lived memory ('cut verse 3', 'key too high')."""
     since = (datetime.strptime(service_date_str, "%Y-%m-%d").date()
              - timedelta(weeks=weeks)).isoformat()
     cur.execute("""
@@ -173,7 +173,7 @@ def flag_pass(ctx, conn):
             continue
         row = lookup_song(cur, title)
         if not row:
-            flags.append(f"⚠️  '{title}' [{slot}] not found in the database — "
+            flags.append(f"⚠️  '{title}' [{slot}] not found in the database; "
                          f"can't check history or pull lyrics. Verify the title.")
             continue
         sid, dbtitle, stype, last_used, times_used, notes, lyrics = row
@@ -181,24 +181,24 @@ def flag_pass(ctx, conn):
 
         # Persistent song note; the worship leader put it there for a reason
         if notes:
-            flags.append(f"📝 Song note — {dbtitle}: {notes}")
+            flags.append(f"📝 Song note; {dbtitle}: {notes}")
 
-        # Repetition inside 4 weeks — the congregation notices.
+        # Repetition inside 4 weeks; the congregation notices.
         # Liturgical items (gospel acclamation, sanctus) are intentionally repeated
         # within a season, so they never count as a streak.
         if last_used and stype != "liturgical":
             try:
                 lu = datetime.strptime(last_used, "%Y-%m-%d").date()
                 if (service_date - lu).days <= 28:
-                    flags.append(f"🔁 Repetition — {dbtitle} [{slot}] was used "
+                    flags.append(f"🔁 Repetition; {dbtitle} [{slot}] was used "
                                  f"{lu.isoformat()} ({(service_date - lu).days} days ago). "
                                  f"Consider an alternative.")
             except ValueError:
                 pass
 
-        # Lived memory — per-use notes from recent services
+        # Lived memory; per-use notes from recent services
         for d, prev_slot, note in song_use_notes(cur, sid, service_date_str):
-            flags.append(f"🧠 Last time — {dbtitle} on {d} [{prev_slot}]: {note}")
+            flags.append(f"🧠 Last time; {dbtitle} on {d} [{prev_slot}]: {note}")
 
     # Weekly traditional/contemporary split vs. the previous Sunday
     trad = sum(1 for s in MAIN_SLOTS if week_types.get(s) == "traditional")
@@ -210,10 +210,10 @@ def flag_pass(ctx, conn):
         if prev_date:
             line += f" Previous Sunday {prev_date}: {ptrad} trad / {pcontemp} contemp."
             if (trad > contemp) == (ptrad > pcontemp) and (ptrad != pcontemp):
-                line += " Same lean two weeks running — consider inverting."
+                line += " Same lean two weeks running; consider inverting."
         flags.append(line)
 
-    # Triumphalist register — cumulative weight across the set
+    # Triumphalist register; cumulative weight across the set
     heavy = []
     for slot, title in songs.items():
         if not title:
@@ -228,7 +228,7 @@ def flag_pass(ctx, conn):
             heavy.append((row[1], hits))
     if len(heavy) >= 3:
         detail = "; ".join(f"{t} ({', '.join(h)})" for t, h in heavy)
-        flags.append(f"⚔️  Triumphalist register — {len(heavy)} songs lean heavy on "
+        flags.append(f"⚔️  Triumphalist register; {len(heavy)} songs lean heavy on "
                      f"conquest/dominion language: {detail}. Consider softening one slot "
                      f"toward vulnerability or lament if the theme calls for it.")
 
@@ -248,7 +248,7 @@ def main():
 
     service_date_str = ctx["date"]
     service_dir = os.path.join(HANDOFF_DIR, service_date_str)
-    print(f"\n🎵 Building worship plan for {service_date_str} — "
+    print(f"\n🎵 Building worship plan for {service_date_str}; "
           f"{ctx.get('liturgical_day', ctx.get('season',''))}")
     print(f"   Theme: {ctx.get('theme','')}")
     print(f"   Template: {ctx.get('template','?')}\n")
@@ -258,7 +258,7 @@ def main():
     custom_chunks = load_liturgist_blocks(service_dir, force)
     print(f"   Got: {', '.join(custom_chunks.keys()) or '(none)'}\n")
 
-    # 2. Scripture — deterministic, never through an LLM
+    # 2. Scripture; deterministic, never through an LLM
     print("📖 Fetching scripture...")
     readings = fetch_readings(ctx.get("readings", {}))
     print()
@@ -300,7 +300,7 @@ def main():
             for fl in flags:
                 f.write(f"- {fl}\n")
         else:
-            f.write("No flags — everything looks good.\n")
+            f.write("No flags; everything looks good.\n")
         f.write(f"\nPlan generated: `{os.path.basename(out)}`\n")
     open(os.path.join(service_dir, "builder_BUILT"), "w").close()
 
@@ -310,7 +310,7 @@ def main():
         for fl in flags:
             print(f"   {fl}")
     else:
-        print("   No flags — everything looks good.")
+        print("   No flags; everything looks good.")
     print(f"\nDone. Plan in Worship Plans/, flags in {os.path.relpath(flags_path, BASE_DIR)}")
 
 

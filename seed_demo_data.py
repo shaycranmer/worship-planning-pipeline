@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-seed_demo_data.py — Build the demonstration database for Trinity Community Church,
+seed_demo_data.py: Build the demonstration database for Trinity Community Church,
 a fictional congregation.
 
 Every song, artist, service, and note below is invented for demonstration.
 No production data, and no information about any real congregation or person,
-appears anywhere in this repository — that exclusion is a design decision,
+appears anywhere in this repository; that exclusion is a design decision,
 documented in the README's data-handling section.
 
 Run:  python3 seed_demo_data.py     (creates worship.db in this folder)

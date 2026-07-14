@@ -56,7 +56,7 @@ def find_pdfs(song_title):
     """
     disambiguator = re.search(r'\(([^)]+)\)', song_title)
     base = re.sub(r'\s*\([^)]+\)', '', song_title).strip().lower()
-    # Normalize punctuation for matching — handles titles like "Halle, Halle, Hallelujah"
+    # Normalize punctuation for matching; handles titles like "Halle, Halle, Hallelujah"
     # where files may be named without commas
     base_match = re.sub(r'[,;]', '', base).strip()
     result = {'voice': [], 'piano': [], 'chords': [], 'choir': [], 'other': []}
@@ -264,7 +264,7 @@ def build_email(
 
         if is_choir_special and (has_new_musicians or heavy_contemporary):
             flags.append(
-                f"⚑ REHEARSAL TIME: Choir special this week — Victoriya takes choir to "
+                f"⚑ REHEARSAL TIME: Choir special this week; Victoriya takes choir to "
                 f"sound check at 9:00am. This cuts into band rehearsal time. "
                 f"{'New musicians on roster (' + ', '.join(new_musicians) + '). ' if has_new_musicians else ''}"
                 f"{'Heavy contemporary week (' + str(contemporary_count) + ' contemporary songs). ' if heavy_contemporary else ''}"
@@ -272,7 +272,7 @@ def build_email(
             )
         elif is_choir_special:
             flags.append(
-                "⚑ REHEARSAL NOTE: Choir special this week — Victoriya takes choir to "
+                "⚑ REHEARSAL NOTE: Choir special this week; Victoriya takes choir to "
                 "sound check at 9:00am. Confirm band rehearsal time is workable."
             )
 
@@ -337,7 +337,7 @@ def build_email(
     conn.close()
 
     # ── Build musician roster info ──────────────────────────────────────────
-    # (Used for tone of the intro — not rendered in email body by default)
+    # (Used for tone of the intro; not rendered in email body by default)
     # The worship leader writes the personal intro; we surface the bones they need.
 
     # ── Compose email body ──────────────────────────────────────────────────
@@ -357,7 +357,7 @@ def build_email(
         for nm in new_musicians:
             lines.append(
                 f"{nm}, I usually send out a fairly extensive pile of sheet music. "
-                "Not ALL of it will be necessary — much of it is to give you choices. "
+                "Not ALL of it will be necessary; much of it is to give you choices. "
                 "For each song, decide what type of music you'd prefer to work from "
                 "(full piano sheet, chords and lyrics, or vocal part) and print just that one."
             )
@@ -382,7 +382,7 @@ def build_email(
     if attachments:
         lines.append("Sheet Music: (attached below)")
     elif missing_files:
-        lines.append("Sheet Music: [⚑ Some files could not be located — see flags]")
+        lines.append("Sheet Music: [⚑ Some files could not be located; see flags]")
     lines.append("")
 
     # Sign off
@@ -393,9 +393,9 @@ def build_email(
 
     # ── Compile flags ────────────────────────────────────────────────────────
     if unverified:
-        flags.append(f"⚑ Unverified file library for: {', '.join(unverified)} — confirm PDFs before sending.")
+        flags.append(f"⚑ Unverified file library for: {', '.join(unverified)}; confirm PDFs before sending.")
     if missing_files:
-        flags.append(f"⚑ No PDFs found for: {', '.join(missing_files)} — attach manually.")
+        flags.append(f"⚑ No PDFs found for: {', '.join(missing_files)}; attach manually.")
     flags.extend(per_song_flags)
 
     return {
@@ -416,7 +416,7 @@ if __name__ == '__main__':
 
     result = build_email(
         roster=["Dave", "Sophia", "Arielle", "Victoriya"],
-        special_notes="Thanks for a beautiful Easter season — you all have been incredible. Here's the music for this Sunday.",
+        special_notes="Thanks for a beautiful Easter season; you all have been incredible. Here's the music for this Sunday.",
         new_musicians=[],
         include_liturgical=False
     )

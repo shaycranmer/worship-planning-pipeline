@@ -22,7 +22,7 @@ TEMPLATE_A = {
         ("rubric", "The Holy Spirit calls us together as the people of God."),
         ("chunk", "welcome", "Welcome", "contextual"),
         ("chunk", "thanksgiving_baptism", "Thanksgiving for Baptism", "custom_with_intro"),
-        ("song", "entrance", "Entrance Song"),  # Optional — Palm Sunday procession etc.
+        ("song", "entrance", "Entrance Song"),  # Optional; Palm Sunday procession etc.
         ("song", "gathering", "Gathering Song"),
         ("chunk", "greeting", "Greeting", "standard"),
         ("chunk", "peace", "Peace", "standard"),
@@ -46,7 +46,7 @@ TEMPLATE_A = {
         ("chunk", "offering_prayer", "Offering Prayer", "custom_with_intro"),
         ("chunk", "great_thanksgiving", "Great Thanksgiving / Dialogue", "standard"),
         ("chunk", "preface", "Preface", "standard"),
-        ("song", "sanctus", "Holy, Holy, Holy (Sanctus)"),  # Optional — skipped if not provided, standard liturgical text used
+        ("song", "sanctus", "Holy, Holy, Holy (Sanctus)"),  # Optional; skipped if not provided, standard liturgical text used
         ("chunk", "thanksgiving_table", "Thanksgiving at the Table (Words of Institution)", "standard"),
         ("chunk", "lords_prayer", "Lord's Prayer", "template_specific"),
         ("chunk", "lamb_of_god", "Lamb of God (Agnus Dei)", "standard"),
@@ -69,7 +69,7 @@ TEMPLATE_B = {
         ("section_header", "GATHERING"),
         ("rubric", "The Holy Spirit calls us together as the people of God."),
         ("chunk", "welcome", "Welcome", "contextual"),
-        ("song", "entrance", "Entrance Song"),  # Optional — Palm Sunday procession etc.
+        ("song", "entrance", "Entrance Song"),  # Optional; Palm Sunday procession etc.
         ("song", "gathering", "Gathering Song"),
         ("chunk", "confession", "Confession and Forgiveness", "standard_or_custom"),
         ("chunk", "kyrie", "Kyrie", "standard"),
@@ -95,7 +95,7 @@ TEMPLATE_B = {
         ("chunk", "offering_prayer", "Offering Prayer", "custom_with_intro"),
         ("chunk", "great_thanksgiving", "Great Thanksgiving / Dialogue", "standard"),
         ("chunk", "preface", "Preface", "standard"),
-        ("song", "sanctus", "Holy, Holy, Holy (Sanctus)"),  # Optional — skipped if not provided, standard liturgical text used
+        ("song", "sanctus", "Holy, Holy, Holy (Sanctus)"),  # Optional; skipped if not provided, standard liturgical text used
         ("chunk", "thanksgiving_table", "Thanksgiving at the Table (Words of Institution)", "standard"),
         ("chunk", "lords_prayer", "Lord's Prayer", "template_specific"),
         ("chunk", "lamb_of_god", "Lamb of God (Agnus Dei)", "standard"),
@@ -391,7 +391,7 @@ class WorshipPlanGenerator:
                 slot_id = item[1]
                 slot_label = item[2]
 
-                # Entrance is truly optional — skip entirely if not provided
+                # Entrance is truly optional; skip entirely if not provided
                 if slot_id == "entrance" and slot_id not in songs:
                     continue
 
@@ -570,7 +570,7 @@ class WorshipPlanGenerator:
         """Add prayers text with paragraph spacing and auto-bold congregational responses."""
         import re
 
-        # Normalize first — strip any existing ** around response phrases to avoid double-wrapping
+        # Normalize first; strip any existing ** around response phrases to avoid double-wrapping
         text = re.sub(r'\*\*(hear our prayer\.?)\*\*', r'\1', text, flags=re.IGNORECASE)
         text = re.sub(r'\*\*(Lord, in your mercy\.?)\*\*', r'\1', text, flags=re.IGNORECASE)
 
@@ -735,7 +735,7 @@ class WorshipPlanGenerator:
                 slot_id = item[1]
                 slot_label = item[2]
 
-                # Entrance is truly optional — skip entirely if not provided
+                # Entrance is truly optional; skip entirely if not provided
                 if slot_id == "entrance" and slot_id not in songs:
                     continue
 
